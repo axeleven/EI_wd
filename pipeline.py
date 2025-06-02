@@ -4,7 +4,7 @@ import emoji
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-
+from visualisation import vizualisation
 
 nlp = spacy.load("it_core_news_sm")
 
@@ -54,3 +54,4 @@ clf = MultinomialNB()
 clf.fit(X_train_vec, y_train)
 y_pred = clf.predict(X_test_vec)
 
+vizualisation(y_test, y_pred)
