@@ -1,5 +1,6 @@
 ##import des fonctions utiles
 import spacy
+import emoji
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -21,19 +22,38 @@ data = [
 
 df = pd.DataFrame(data, columns=["tweet", "label"]) 
 
-
 def preprocess(text):
     doc = nlp(text)
-    tokens = [
-        token.lemma_.lower() #renvoie le lemme en minuscule de chaque mot
-        for token in doc
-        if not token.is_stop and not token.is_punct and not token.like_url and not token.like_num #filtrage des token vides de sens
-    ]
-    return " ".join(tokens) #renvoie la liste de token sous la forme d'un unique string
+    tokens = []
+    for token in doc:
+        if emoji.is_emoji(token.text):
+            tokens.append(emoji.demojize(token.text))
+        if not token.is_stop and not token.is_punct and not token.like_num and not token.like_url:
+            tokens.append(token.lemma_.lower())#renvoie le lemme en minuscule de chaque mot
+    return " ".join(tokens)#renvoie la liste de token sous la forme d'un unique string
+
+
 
 
 
 df["clean"] = df["tweet"].apply(preprocess) # crée une nouvelle colonne contenant les txeet netoyés
+
+
+vectorizer = TfidfVectorizer() # création de la fonction de vectorisation
+X = vectorizer.fit_transform(df["clean"]) # calcul des statistiques tfidf et création des vecteur documents
+y = df["label"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) # divise le data set en deux sous ensemble de test et 'entrainement
+
+
+#création du model avec 100 arbres, en utilisant les données d'entrainement
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+#evaluation de la classe des données de test et comparaisons
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred))
+
 
 
 
