@@ -27,7 +27,7 @@ def nettoyer_et_lemmatiser(texte):
     ]
     return " ".join(tokens)
 
-df = pd.read_csv("resultat.csv")
+df = pd.read_csv("big_equilibre_quinze_mille_tweets.csv")
 
 df = df.dropna(subset=["Content", "label"])
 
@@ -48,8 +48,11 @@ vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
-clf = MultinomialNB(alpha = 0.1)
-clf.fit(X_train_vec, y_train)
-y_pred = clf.predict(X_test_vec)
+for alpha in [0.1]:
+    clf = MultinomialNB(alpha=alpha)
+    clf.fit(X_train_vec, y_train)
+    y_pred_tmp = clf.predict(X_test_vec)
+    vizualisation(y_test, y_pred_tmp, alpha)
 
-vizualisation(y_test, y_pred)
+
+
