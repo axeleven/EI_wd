@@ -27,22 +27,20 @@ def nettoyer_et_lemmatiser(texte):
     ]
     return " ".join(tokens)
 
-df = pd.read_csv("dataset.csv")
+df = pd.read_csv("resultat.csv")
 
-## Il faudra peut-être le changer à la fin 
-
-df = df.dropna(subset=["texte", "sentiment"])
+df = df.dropna(subset=["Content", "label"])
 
 
-df["texte_nettoye"] = df["texte"].apply(nettoyer_et_lemmatiser)
+df["texte_nettoye"] = df["Content"].apply(nettoyer_et_lemmatiser)
 
 # Séparation des données en ensembles d'entraînement et de test: on fixe la seed à 42, on utilise un stratifié pour conserver la proportion des classes
 X_train, X_test, y_train, y_test = train_test_split(
     df["texte_nettoye"],
-    df["sentiment"],
+    df["label"],
     test_size=0.2,
     random_state=42,
-    stratify=df["sentiment"]
+    stratify=df["label"]
 )
 
 ## Vectorisation et entraînement du modèle -> on fait le choix de la vectorisation TF-IDF et du classifieur Naive Bayes multinomial
@@ -50,7 +48,7 @@ vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
-clf = MultinomialNB()
+clf = MultinomialNB(alpha = 0.1)
 clf.fit(X_train_vec, y_train)
 y_pred = clf.predict(X_test_vec)
 
