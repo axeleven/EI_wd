@@ -53,35 +53,17 @@ y = df["label"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) # divise le data set en deux sous ensemble de test et 'entrainement
 
 
-param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [None, 10, 20],
-    'min_samples_split': [2, 5],
-    'min_samples_leaf': [1, 2],
-    'max_features': ['sqrt', 'log2']
-}
 
 #création du model avec 100 arbres, en utilisant les données d'entrainement
-model = RandomForestClassifier(random_state=42)
+model = RandomForestClassifier(n_estimators=160,criterion='gini',max_depth= None,max_features='sqrt', min_samples_leaf=1,min_samples_split=6,random_state=42)
 
-grid_search = GridSearchCV(
-    estimator=model,
-    param_grid=param_grid,
-    scoring='accuracy',       # critère de performance 
-    cv=5,
-    n_jobs=-1,
-    verbose=2
-)
 
-grid_search.fit(X_train, y_train)
 
-#affichage des meilleurs paramètres
-print("Meilleurs paramètres :", grid_search.best_params_)
-print("Meilleure performance :", grid_search.best_score_)
+model.fit(X_train, y_train)
 
-#utilisation du meilleur estimateur
-best_model = grid_search.best_estimator_
-y_pred = best_model.predict(X_test) 
+
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred))
 
 
 
