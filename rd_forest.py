@@ -65,7 +65,16 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 print(classification_report(y_test, y_pred))
 
+#application du modèle au reste de la database:
+unlabeled_data = pd.read_csv("C:\\Users\\jean\\Documents\\CS\\Cours 1A\\ST4 Data web\\ei_wd\\tweets_csv_utf8_corrige_final.csv", sep=";")
+df_unlabeled = pd.DataFrame(unlabeled_data, columns=["Content", "label"]) 
+df_unlabeled['clean'] = df_unlabeled['Content'].apply(preprocess) 
+X_unlabeled = vectorizer.transform(df_unlabeled['clean'])
+y_pred = model.predict(X_unlabeled)
+df_unlabeled['predicted_label'] = y_pred
 
+
+print('proportion de tweeet par classe',df_unlabeled['predicted_label'].value_counts())
 
 
 
