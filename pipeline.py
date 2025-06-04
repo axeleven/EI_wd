@@ -2,8 +2,8 @@ import pandas as pd
 import spacy
 import emoji
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.naive_bayes import MultinomialNB, ComplementNB
 from visualisation import vizualisation
 
 nlp = spacy.load("it_core_news_sm")
@@ -21,13 +21,19 @@ def nettoyer_et_lemmatiser(texte):
     """
     texte = emoji.demojize(texte, delimiters=("", ""))
     doc = nlp(texte.lower())   
+    blockwords = {"rt"}
     tokens = [
         token.lemma_ for token in doc
-        if not token.is_stop and not token.is_punct and not token.like_url and not token.like_email
+        if not token.is_stop
+        and not token.is_punct
+        and not token.like_url
+        and not token.like_email
+        and not token.text.startswith("@")
+        and token.lemma_ not in blockwords
     ]
     return " ".join(tokens)
 
-df = pd.read_csv("big_equilibre_quinze_mille_tweets.csv")
+df = pd.read_csv("maxi_label.csv")
 
 df = df.dropna(subset=["Content", "label"])
 
@@ -48,7 +54,7 @@ vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
-for alpha in [0.1]:
+for alpha in [0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2]:
     clf = MultinomialNB(alpha=alpha)
     clf.fit(X_train_vec, y_train)
     y_pred_tmp = clf.predict(X_test_vec)
