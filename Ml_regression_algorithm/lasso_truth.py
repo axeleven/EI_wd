@@ -20,7 +20,7 @@ import emoji
 import spacy
 
 
-
+# chargement du modèle anglais
 nlp = spacy.load("en_core_news_sm")
 
 def nettoyer_et_lemmatiser(texte):
