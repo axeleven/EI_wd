@@ -12,7 +12,6 @@ ei_wd/
 ├── scrapping/                    # Scripts de collecte de données web
 ├── tentativees_retranscription/  # Scripts pour gérer les problèmes d'encodage dans le CSV
 ├── correelation_colere.py        # Script final pour déterminer s'il existe une corrélation entre le fait d'être haineux et le buzz sur le réseau de Trump
-├── api.py                        # Version modifiée de truthbrush à remplacer dans le module
 ├── README.md                      # Documentation du projet et instructions d'utilisation
 ```
 
@@ -34,7 +33,18 @@ Il a pour objectif final de démontrer une corrélation entre le niveau de haine
 - **Tentativees_retranscription** : Scripts pour résoudre les problèmes d'encodage dans les fichiers CSV.
 - **correelation_colere.py** : Script principal pour l'analyse de la corrélation entre discours haineux et viralité sur le réseau de Trump.
 
+# Instructions
 
+Remplacer le api.py du module truthbrush par le api.py du dossier scrapping
+
+# Contributions
+
+
+Maxime: son pc, le modèle multinomialNB
+Jean: Random Forest, Mise en place d'un Grid Search
+Rayen: SVM Linéaire, régression lasso pour la partie sur truth,
+Lorenzo: Étiquettage, retranscription du csv, kernel approximé
+Axel: XGBoost GPU & CPU, Optimisation bayesienne (optuna),scrapping
 
 
 

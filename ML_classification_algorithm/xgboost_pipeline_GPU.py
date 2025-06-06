@@ -10,6 +10,7 @@ from sklearn.metrics import f1_score, cohen_kappa_score
 from xgboost import XGBClassifier
 from ML_classification_algorithm.visualisation import vizualisation
 # Charger le modèle spaCy pour l'italien
+#TODO: Entrainer le modèle sur un dataset anglophone.
 nlp = spacy.load("it_core_news_sm")
 
 def nettoyer_et_lemmatiser(texte):
