@@ -4,7 +4,7 @@ import emoji
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, ComplementNB
-from visualisation import vizualisation
+from ML_classification_algorithm.visualisation import vizualisation
 
 nlp = spacy.load("it_core_news_sm")
 

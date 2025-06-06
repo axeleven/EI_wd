@@ -3,14 +3,12 @@ import spacy
 import emoji
 import joblib
 import optuna
-import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import f1_score, cohen_kappa_score
 from xgboost import XGBClassifier
-from visualisation import vizualisation
-print("hell no")
+from ML_classification_algorithm.visualisation import vizualisation
 # Charger le modèle spaCy pour l'italien
 nlp = spacy.load("it_core_news_sm")
 
@@ -29,44 +27,39 @@ def nettoyer_et_lemmatiser(texte):
     ]
     return " ".join(tokens)
 
-# 1. Lecture et prétraitement des données
-df = pd.read_csv("dataset.csv")
+# Prepocessing
+df = pd.read_csv("../datasets/dataset.csv")
 df = df.dropna(subset=["Content", "label"])
 df["texte_nettoye"] = df["Content"].apply(nettoyer_et_lemmatiser)
 
-# 2. Séparation en train/test
+# Séparation des données: 80% train, 20% test et stratification par label
 X_text = df["texte_nettoye"]
 y = df["label"]
 X_train_text, X_test_text, y_train, y_test = train_test_split(
     X_text, y, test_size=0.2, random_state=42, stratify=y
 )
 
-# 3. Vectorisation TF-IDF avec paramètres optimisés
-tfidf_params = {
-    'ngram_range': (1, 2),
-    'min_df': 0.001,
-    'max_df': 0.8,
-    'max_features': 75000
-}
-vectorizer = TfidfVectorizer(**tfidf_params)
+# vectorisation tf-idf
+
+vectorizer = TfidfVectorizer()
 X_train_tfidf = vectorizer.fit_transform(X_train_text)
 X_test_tfidf = vectorizer.transform(X_test_text)
 
-# 4. Réduction de dimension avec TruncatedSVD
+# réduction de dimension avec SVD
 dim_reduction = TruncatedSVD(n_components=300, random_state=42)
 X_train_reduced = dim_reduction.fit_transform(X_train_tfidf)
 X_test_reduced = dim_reduction.transform(X_test_tfidf)
 
-# 5. Définition de l'objectif Optuna (multi-objectifs: F1-macro et Kappa)
+# Définition de la fonction objectif d'Optuna
 def objective(trial):
     params = {
-        'n_estimators': trial.suggest_int('n_estimators', 100, 1500),
-        'max_depth': trial.suggest_int('max_depth', 3, 17),
-        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.35, log=True),
+        'n_estimators': trial.suggest_int('n_estimators', 100, 1000),
+        'max_depth': trial.suggest_int('max_depth', 3, 12),
+        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
         'gamma': trial.suggest_float('gamma', 0.0, 1000),
         'subsample': trial.suggest_float('subsample', 0, 1),
         'colsample_bytree': trial.suggest_float('colsample_bytree', 0, 1),
-        'min_child_weight': trial.suggest_int('min_child_weight', 1, 55),
+        'min_child_weight': trial.suggest_int('min_child_weight', 1, 50),
         'reg_alpha': trial.suggest_float('reg_alpha', 0.0, 10),
         'reg_lambda': trial.suggest_float('reg_lambda', 0.0, 10),
         'objective': 'multi:softprob',
@@ -90,17 +83,17 @@ def objective(trial):
     kappa = cohen_kappa_score(y_val, y_pred)
     return f1, kappa
 
-# 6. Création et optimisation de l'étude Optuna
+
 study = optuna.create_study(directions=["maximize", "maximize"])
 study.optimize(objective, n_trials=100)
 
-# 7. Sélection du meilleur essai
+# sélection du meilleur essai
 best_trial = max(study.trials, key=lambda t: t.values[0])
 best_params = best_trial.params
 print("Meilleurs paramètres (selon F1-macro) :", best_params)
 print("Values (F1, Kappa) :", best_trial.values)
 
-# 8. Entraînement final
+# entrainement du modèle final avec les meilleurs paramètres
 final_params = best_params.copy()
 final_params.update({
     'objective': 'multi:softprob',
@@ -116,15 +109,10 @@ final_model.fit(
     verbose=False
 )
 
-# 9. Évaluation sur l'ensemble de test
-y_pred_test = final_model.predict(X_test_reduced)
-f1_final = f1_score(y_test, y_pred_test, average='macro')
-kappa_final = cohen_kappa_score(y_test, y_pred_test)
-print(f"F1-macro sur test set: {f1_final:.4f}")
-print(f"Kappa de Cohen sur test set: {kappa_final:.4f}")
 
-# 10. Visualisation et sauvegarde
+y_pred_test = final_model.predict(X_test_reduced)
 vizualisation(y_test, y_pred_test, "XGBoost Optuna (GPU) avec early stopping")
+# sauvegarde (l'optimisation des paramètres est très longue, on veut éviter de la refaire)
 joblib.dump(final_model, "xgb_modele_gpu_optuna_es2.joblib")
 joblib.dump(vectorizer, "tfidf_vectorizer_ameliore2.joblib")
 joblib.dump(dim_reduction, "svd_dim_reduction2.joblib")

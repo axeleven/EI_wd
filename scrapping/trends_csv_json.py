@@ -9,9 +9,7 @@ posts= api.trending()
 api.pull_comments(posts[0]["id"], include_all=True)
 groups = api.trending_groups()
 groups.extend(api.suggested_groups())   
-suggested_users = api.suggested()
-users = []
-users.extend(suggested_users)
+
 
 # Fetching group posts
 
@@ -20,9 +18,8 @@ users.extend(suggested_users)
 # Fetching suggested users posts and followers/followings
 try:
     for group in groups:
-        group_posts = api.group_posts(group["id"])
-
-    print(len(posts))
+        posts.append(api.group_posts(group["id"]))
+        
 
 except Exception as e:
     print(e)

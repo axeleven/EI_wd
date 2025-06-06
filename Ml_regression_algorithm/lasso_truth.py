@@ -54,12 +54,10 @@ y = df["colere_score"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
 
 pipeline = Pipeline([
     ("tfidf", TfidfVectorizer(max_features=2000)),
-    ("lasso", Lasso(max_iter=10000))
+    ("lasso", Lasso(max_iter=100000))
 ])
 
 param_grid = {
